@@ -19,18 +19,19 @@ A DSH plugin that adds a **Notes** panel and a **QuillPen** AI assistant mode.
 
 移植自 [Quill](https://github.com/)（本地优先的笔记 / 待办 / 白板应用），适配 DSH 的插件架构。
 
-## 与开发版的区别（只有一处功能差异）
+## 本版特点
 
-| | 开发版 | **用户版（本版）** |
-|---|---|---|
-| 笔记 / 白板 / 待办 / 标签 / 回收站 / 附件 / 文档读取 | ✅ | ✅ 完全一样 |
-| AI 助手模式（42 个笔记工具） | ✅ 叫「笔记助手」 | ✅ 叫「**羽毛笔**」 |
-| **新建云数据目录** | ✅ 内置创建能力 | ❌ **没有**（软件里既没有入口，也没有创建所需凭据） |
-| 用 key 连接已有云数据目录 | ✅ | ✅ **保留**（由管理员创建并发放 key） |
-| 默认笔记库 | 沿用原有配置 | **干净新库** `~/Documents/QuillNotes` |
+| 项 | 说明 |
+|---|---|
+| AI 助手模式 | **羽毛笔**（42 个笔记工具） |
+| **新建云数据目录** | ❌ **没有**（软件里既没有入口，也没有创建所需凭据） |
+| 用 key 连接已有云数据目录 | ✅ 保留（由管理员创建并发放 key） |
+| 默认笔记库 | **干净新库** `~/Documents/QuillNotes` |
 
 > **云数据目录怎么来**：由管理员创建好后把一串 `QC1-…` 或 `QS2-…` 的 key 给你，
 > 在「笔记本 → 云端库 → 连接云数据目录」里粘贴即可。**key 请勿公开分享**（里面含该目录的凭据）。
+>
+> 为什么"没有新建能力"反而是好事，见下面 [为什么"没有新建云数据目录"也能放心](#为什么没有新建云数据目录也能放心)。
 
 ## 安装
 
@@ -115,10 +116,6 @@ A：见上文「用 key 连接云数据目录」。多半是地址文件没跟�
 A：用户版是**干净新库**，不会自动接管旧库。要沿用旧目录：在插件配置里写 `libraryRoot`，
 或设环境变量 `DSH_QUILL_LIBRARY_ROOT`。
 
-**Q：能不能同时装开发版和用户版？**
-A：技术上可以（包名、面板 key、路由、样式作用域、数据目录、技能目录都已区分），
-但**不建议同时打开同一个笔记库**（两个进程会争同一份索引）。推荐一台机器只装一个。
-
 **Q：画白板时拖拽会选中卡片里的文字？**
 A：已在 CSS 层处理（世界层 `user-select: none`，只有双击进入编辑态才允许选字）。若仍能选中，说明装的是旧版本。
 
@@ -160,21 +157,21 @@ MIT（见 [LICENSE](LICENSE)）。本项目移植自 Quill（本地笔记 / 待�
 
 Ported from [Quill](https://github.com/) (a local-first notes / todos / whiteboard app) onto DSH's plugin architecture.
 
-## Difference from the developer edition
+## What's in this edition
 
-Only **one** functional difference:
-
-| | Developer edition | **User edition (this one)** |
-|---|---|---|
-| Notes / whiteboards / todos / tags / trash / attachments / doc reading | ✅ | ✅ identical |
-| AI assistant mode (42 note tools) | ✅ named "笔记助手" | ✅ named "**QuillPen / 羽毛笔**" |
-| **Create a cloud data directory** | ✅ built in | ❌ **absent** — no UI entry point *and* no credentials to do it |
-| Connect to an existing cloud directory via key | ✅ | ✅ **kept** (the admin creates it and hands you a key) |
-| Default library | existing config | **fresh empty library** at `~/Documents/QuillNotes` |
+| Item | Description |
+|---|---|
+| AI assistant mode | **QuillPen / 羽毛笔** (42 note tools) |
+| **Create a cloud data directory** | ❌ **absent** — no UI entry point *and* no credentials to do it |
+| Connect to an existing cloud directory via key | ✅ kept (the admin creates it and hands you a key) |
+| Default library | **fresh empty library** at `~/Documents/QuillNotes` |
 
 > **Where do cloud directories come from?** An administrator creates one and gives you a `QC1-…` or `QS2-…` key.
 > Paste it in *Notebook → Cloud library → Connect cloud directory*.
 > **Please don't share the key publicly** — it contains credentials for that directory.
+>
+> For why *not* having the creation ability is a good thing, see
+> [Why it's safe that "create cloud directory" is missing](#why-its-safe-that-create-cloud-directory-is-missing).
 
 ## Installation
 
@@ -258,12 +255,8 @@ A: Either the key wasn't copied in full (stray spaces/newlines), or the admin de
 A: See *Connecting to a cloud directory* above — usually the address file didn't travel with the package.
 
 **Q: Where did my existing notes go?**
-A: The user edition starts with a **fresh empty library**; it won't take over an old one. To reuse an old directory,
+A: This edition starts with a **fresh empty library**; it won't take over an old one. To reuse an old directory,
 set `libraryRoot` in the plugin config or the `DSH_QUILL_LIBRARY_ROOT` env var.
-
-**Q: Can I install the developer edition and the user edition side by side?**
-A: Technically yes (package name, panel key, route, style scope, data dir and skill dir are all distinct),
-but **don't open the same library in both** — two processes would fight over one index. One per machine is recommended.
 
 **Q: Dragging on the whiteboard selects text inside cards?**
 A: Fixed at the CSS layer (`user-select: none` on the world layer; text becomes selectable only after double-clicking into edit mode). If you still see it, you're running an older build.
