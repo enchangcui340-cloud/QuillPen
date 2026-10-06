@@ -1,0 +1,174 @@
+# dsh-quill 的组合包补丁层。
+#
+# 这个文件声明两样东西：
+#   1) quill-notes —— DSH 侧边栏的「笔记」面板（宿主半边 lib/index.js，客户端半边 lib/client.js）
+#   2) preset-notes-assistant-user —— 「羽毛笔」模式（agent preset）
+#
+# 关于库路径：
+#   · 不写 config.libraryRoot —— 首次使用会自动沿用 Quill 的
+#     %APPDATA%\workapp\config.json 里的 libraryPath（零配置接管现有笔记库）
+#   · 想指定别的库，就写 config.libraryRoot（或用环境变量 DSH_QUILL_LIBRARY_ROOT）
+#
+# 关于「羽毛笔」模式：
+#   · 能力 = 标准模式全量（联网 / 文件 / 命令 / 读图 / 技能 / 压缩 / 子代理 / 问用户 / 呈现）
+#   · 唯一区别是**出口**：产物只能是库内的 笔记 / 白板 / 待办 —— 由 persona 常驻规则约束
+#   · 额外挂上 dsh-quill/tools（笔记工具层），它只在本模式的作用域里注册工具
+#   · 想调整能力范围？增删下面 plugins 里的行即可（改完重新安装本 bundle）
+
+- insert:
+    - id: quill-notes-user
+      name: 'dsh-quill-user'
+
+- insert:
+    - id: preset-notes-assistant-user
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: notes-assistant-user
+        name: 羽毛笔
+        description: 能力与标准模式相同（联网、读文件、读图、跑命令）；产出只落进笔记库——笔记、白板、待办。
+        order: 5
+        plugins:
+          # ---------- 1) 常驻自我认知：让这个模式永远知道自己该产出什么 ----------
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              suffix: 你的工作目录是 {{cwd}}。
+              prefix: |
+                你是「羽毛笔」：你只为用户的**笔记库**工作。
+
+                【产物只有三种】笔记（Markdown）、白板（.canvas.json）、待办（库里的待办列表）。除此之外没有交付物。
+
+                【出口契约（硬规则）】
+                · 用户说「白板 / 绘制 / 画 / 脑图 / 流程图 / 关系图 / 梳理成图」→ 一律在**库内白板**里做，禁止生成图片或文档当成品交付。
+                · 说「整理 / 记录 / 总结 / 写下来 / 归档」→ 写进库内笔记。
+                · 说「待办 / 要做 / 提醒 / 记一下」→ 写进库内待办（不是你的 todo 执行清单）。
+                · 说「笔记夹 / 文件夹」→ 库内目录。
+                · 可以生成图片或中间文件，但必须导入库内并在笔记或白板里引用；present 只能指向库内路径。
+
+                【动手前先看现状】先调 notes_overview 了解当前库；改具体内容前先 note_read / board_read。
+
+                【安全】删除一律进回收站（可恢复）；trash_purge 必须先得到用户明确要求。
+
+                【多库】用 library_list 看有哪些库，用户要求才 library_switch，切换后回报当前库。
+
+                【能力范围】联网搜索、读文件、读图、跑命令都与标准模式相同 —— 唯一区别是产出必须落进笔记库。
+
+                【详细规范】动手做笔记/白板/待办**之前**，先调用 `notes_handbook` 工具取手册
+                （工具地图、白板绘制规范、文档保真读取、常见配方、红线、这个库的特性）；
+                另外「notes-assistant-user」技能里也有同一份内容（如果技能目录里能看到它）。
+                用中文回答（除非用户用别的语言）。
+
+          # ---------- 2) 指令文件（保留标准行为） ----------
+          - id: agent-instructions
+            name: '@deepseek-ai/dsh-agent-instructions'
+            config:
+              maxBytes: 65536
+
+          # ---------- 3) 标准模式的工具，一个不少 ----------
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+          - id: tool-jobs
+            name: '@deepseek-ai/dsh-tool-jobs'
+          - id: skill-filesystem
+            name: '@deepseek-ai/dsh-skill-filesystem'
+          - id: tool-skill
+            name: '@deepseek-ai/dsh-tool-skill'
+          - id: command-goal
+            name: '@deepseek-ai/dsh-command-goal'
+          - id: tool-goal
+            name: '@deepseek-ai/dsh-tool-goal'
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+          - id: delegation
+            name: cordis:group
+            group: true
+            isolate:
+              workflowEngine: true
+            config:
+              - id: tool-subagent-control
+                name: '@deepseek-ai/dsh-tool-subagent-control'
+              - id: tool-subagent-list-agents
+                name: '@deepseek-ai/dsh-tool-subagent-control/list-agents'
+              - id: tool-subagent
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: spawn
+                  toolName: subagent
+                  modelSelectionSettings: true
+                  backgroundMode: continuable
+              - id: tool-subagent-fork
+                name: '@deepseek-ai/dsh-tool-subagent'
+                config:
+                  provider: fork
+                  toolName: subagent_fork
+                  backgroundMode: continuable
+              - id: tool-subagent-codex
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: codex
+                  toolName: subagent_codex
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+              - id: tool-subagent-claude-code
+                name: '@deepseek-ai/dsh-tool-subagent'
+                disabled: true
+                config:
+                  provider: claude-code
+                  toolName: subagent_claude_code
+                  backgroundMode: one-shot
+                  maxDepth: provider-managed
+              - id: workflow-ptc
+                name: '@deepseek-ai/dsh-workflow-ptc'
+                config:
+                  provider: spawn
+              - id: tool-workflow
+                name: '@deepseek-ai/dsh-tool-workflow'
+              - id: tool-ralph
+                name: '@deepseek-ai/dsh-tool-ralph'
+                disabled: true
+                config:
+                  subagentProvider: spawn
+                  maxRounds: 64
+          - id: tool-ask-user
+            name: '@deepseek-ai/dsh-tool-ask-user'
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+          - id: present
+            name: '@deepseek-ai/dsh-tool-present'
+
+          # ---------- 4) 笔记工具层（本模式专属） ----------
+          - id: notes-tools-user
+            name: 'dsh-quill-user/tools'

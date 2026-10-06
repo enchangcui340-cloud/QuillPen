@@ -1,0 +1,19 @@
+{
+  "id": "board_fixture001",
+  "type": "whiteboard",
+  "version": 1,
+  "title": "示例白板",
+  "nodes": [
+    {
+      "id": "n1",
+      "x": 0,
+      "y": 0,
+      "w": 200,
+      "h": 100,
+      "text": "示例卡片",
+      "color": null,
+      "noteId": null
+    }
+  ],
+  "edges": []
+}

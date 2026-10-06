@@ -1,0 +1,62 @@
+# 依赖与构建产物（不要提交）
+node_modules/
+packages/*/node_modules/
+pnpm-lock.yaml.bak
+
+# 构建产物（由 build.mjs 生成）
+src-client/styles.generated.ts
+packages/*/lib/host.js
+packages/*/lib/client.js
+
+# 密钥：任何私钥/凭据都不许进仓库
+*.key
+*.pem
+*.ppk
+secrets.bin
+
+# 本机状态与运行数据（绝对不能提交）
+.usercheck-*/
+.cloudcheck*/
+.quill-plugin*/
+libraries.json
+access.log
+skill-sync.log
+*.log
+
+# 测试跑动时在仓库根建的临时笔记库（多套测试会创建空库/库副本）
+/notes/
+/data/
+/.trash/
+/_收件箱/
+/.build/
+/*.canvas.json
+/*.md.bak
+
+# 测试与临时
+.tmp/
+.tmp-*/
+.tmp-*.log
+.ff.log
+.copy-report.txt
+.synclog.txt
+
+# 管理员/开发专用：含服务器信息与本机路径，**不随开源仓库发布**
+# （文件留在本地，管理员的机器上继续可用；打包 zip 时也要排除）
+_dev-only/
+reports/
+
+# 云服务器地址（本地/分发用）
+# 仓库里**不能有**它（否则开源即公开管理员的服务器）；但**打包给用户时要带上** ——
+# 这样用户把插件文件夹复制到另一台电脑后，零配置就能用短 key 连上（否则报「连不上云服务器」）。
+# 文件位置：packages/dsh-quill-user/cloud-endpoint.json
+cloud-endpoint.json
+
+# 测试跑动时可能在仓库根留下的运行数据
+.tmp-shortkey-check/
+.tmp-shortkey-e2e/
+
+# 编辑器
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

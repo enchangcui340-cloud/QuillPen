@@ -1,0 +1,54 @@
+[
+  {
+    "id": "note_fixture0000",
+    "kind": "md",
+    "fileName": "关于这个笔记库.md",
+    "dir": "",
+    "title": "关于这个笔记库",
+    "createdAt": "2026-01-01T09:55:00",
+    "updatedAt": "2026-01-01T09:55:00",
+    "fileMtimeMs": 1767232500000,
+    "trashed": false,
+    "originPath": null,
+    "aiTouched": false
+  },
+  {
+    "id": "note_fixture0001",
+    "kind": "md",
+    "fileName": "欢迎.md",
+    "dir": "",
+    "title": "欢迎",
+    "createdAt": "2026-01-01T10:00:00",
+    "updatedAt": "2026-01-01T10:00:00",
+    "fileMtimeMs": 1767232800000,
+    "trashed": false,
+    "originPath": null,
+    "aiTouched": false
+  },
+  {
+    "id": "note_fixture0002",
+    "kind": "md",
+    "fileName": "示例笔记.md",
+    "dir": "示例笔记夹",
+    "title": "示例笔记",
+    "createdAt": "2026-01-01T10:05:00",
+    "updatedAt": "2026-01-01T10:05:00",
+    "fileMtimeMs": 1767233100000,
+    "trashed": false,
+    "originPath": null,
+    "aiTouched": false
+  },
+  {
+    "id": "board_fixture001",
+    "kind": "whiteboard",
+    "fileName": "示例白板.canvas.json",
+    "dir": "",
+    "title": "示例白板",
+    "createdAt": "2026-01-01T10:10:00",
+    "updatedAt": "2026-01-01T10:10:00",
+    "fileMtimeMs": 1767233400000,
+    "trashed": false,
+    "originPath": null,
+    "aiTouched": false
+  }
+]

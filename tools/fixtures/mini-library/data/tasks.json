@@ -1,0 +1,18 @@
+[
+  {
+    "id": "task_fixture0001",
+    "name": "示例待办",
+    "tagIds": [
+      "tag_fixture0001"
+    ],
+    "priority": "minor",
+    "ddl": null,
+    "ddlInferred": false,
+    "done": false,
+    "doneAt": null,
+    "noteId": null,
+    "origin": "manual",
+    "createdAt": "2026-01-01T10:00:00",
+    "updatedAt": "2026-01-01T10:00:00"
+  }
+]

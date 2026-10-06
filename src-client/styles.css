@@ -1,0 +1,1122 @@
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --border: #e3e6ea;
+  --text: #1f2329;
+  --muted: #8a9099;
+  --accent: #2f6fed;
+  --accent-soft: #eaf1fe;
+  --danger: #d9363e;
+  --warn: #d98014;
+  --ok: #2ba471;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(16, 24, 40, 0.06);
+  /* 打字光标颜色（浅色主题：标准蓝） */
+  --caret: #2f6fed;
+
+  /* 次级面（原先散落的写死浅色底 #f2f3f5 等）：统一成变量，深色主题下自动跟随 */
+  --surface-2: #f2f3f5;
+  --surface-3: #fafbfc;
+  --hover-bg: #f2f3f5;
+  --swatch-ring: rgba(16, 24, 40, 0.18);
+  --danger-soft: #fdf1f1;
+
+  /* 白板卡片配色板（浅色主题：浅底 + 深字）
+     值与 src-client/lib/card-colors.ts 一一对应；改动要两边同步（check-contrast 会校验对比度） */
+  --card-default-bg: #ffffff; --card-default-fg: #1f2329;
+  --card-pink-bg: #fbd9e6;    --card-pink-fg: #1f2329;
+  --card-blue-bg: #cfe1fb;    --card-blue-fg: #1f2329;
+  --card-green-bg: #cdeccf;   --card-green-fg: #1f2329;
+  --card-yellow-bg: #fdf3b8;  --card-yellow-fg: #1f2329;
+  --card-purple-bg: #e3d9fb;  --card-purple-fg: #1f2329;
+
+  /* ── 绘制图形用的"线色 / 描边色"（浅色主题）────────────────────────
+     规则（见《白板绘制功能-设计规范》§三）：
+       · 几何图形**填充**用上面的 --card-*-bg（与卡片是一家人）
+       · **线 / 描边**用这里的 --draw-*-line（同色系压深一档，保证看得清）
+     这些色值是**算过对比度**的：vs 白板底 #f4f5f7 全部 ≥ 3:1（WCAG 非文字标准）。
+     check-contrast 会持续校验，别随手改。 */
+  --draw-default-line: #6b7280;
+  --draw-pink-line:    #cf4a86;
+  --draw-blue-line:    #2f6fed;
+  --draw-green-line:   #1f8f5f;
+  --draw-yellow-line:  #a86f00;
+  --draw-purple-line:  #7c5cd6;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; margin: 0; }
+
+body {
+  font-family: "Microsoft YaHei UI", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+button { cursor: pointer; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #d3d7dd; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #bfc5cd; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------- 布局 ---------- */
+.app { display: flex; height: 100%; }
+
+.sidebar {
+  width: 208px;
+  flex: 0 0 208px;
+  background: #fbfbfc;
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 10px;
+  gap: 4px;
+}
+
+.brand { font-size: 15px; font-weight: 600; padding: 6px 8px 12px; display: flex; align-items: center; justify-content: space-between; }
+.brand small { color: var(--muted); font-weight: 400; font-size: 11px; }
+
+.nav-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: var(--radius);
+  border: none; background: transparent; text-align: left; width: 100%;
+  color: var(--text);
+}
+.nav-item:hover { background: #f0f1f3; }
+.nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.nav-item .icon { width: 18px; text-align: center; }
+
+.sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 4px; }
+
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  height: 48px; flex: 0 0 48px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+}
+.topbar h1 { font-size: 15px; margin: 0; font-weight: 600; }
+.topbar .spacer { flex: 1; }
+
+.content { flex: 1; overflow: auto; padding: 14px; min-height: 0; }
+.content.flush { padding: 0; overflow: hidden; }
+
+/* ---------- 通用控件 ---------- */
+.btn {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 6px 12px; border-radius: var(--radius);
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+}
+.btn:hover { background: #f5f6f8; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover { background: #2560d8; }
+.btn.danger { color: var(--danger); border-color: #f0c2c5; }
+.btn.danger:hover { background: #fdf1f1; }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn.ghost:hover { background: #f0f1f3; }
+.btn.small { padding: 3px 8px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.input, .select, .textarea {
+  border: 1px solid var(--border); background: var(--panel);
+  padding: 6px 9px; border-radius: var(--radius); width: 100%;
+}
+.input:focus, .select:focus, .textarea:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+.textarea { resize: vertical; min-height: 60px; }
+
+.row { display: flex; align-items: center; gap: 8px; }
+.col { display: flex; flex-direction: column; gap: 8px; }
+.muted { color: var(--muted); }
+.small { font-size: 12px; }
+.grow { flex: 1; min-width: 0; }
+.nowrap { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spacer { flex: 1; }
+
+.card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card + .card { margin-top: 12px; }
+.card-head { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.card-body { padding: 12px 14px; }
+
+.empty { padding: 48px 16px; text-align: center; color: var(--muted); }
+.empty .big { font-size: 32px; margin-bottom: 8px; }
+
+.badge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 10px; font-size: 12px; background: #f0f1f3; color: #5a616b; }
+.badge.tag { background: var(--accent-soft); color: var(--accent); }
+.badge.p-important { background: #fdeceb; color: #c9372c; }
+.badge.p-minor { background: #eef2fb; color: #3a63c0; }
+.badge.p-optional { background: #f1f2f4; color: #6b7280; }
+.badge.overdue { background: #fdeceb; color: var(--danger); }
+.badge.ai { background: #f0ecfd; color: #6b4fd8; }
+
+/* ---------- 任务 ---------- */
+.task-layout { display: flex; height: 100%; min-height: 0; }
+.tag-panel { width: 232px; flex: 0 0 232px; border-right: 1px solid var(--border); overflow: auto; padding: 10px; background: var(--panel); }
+.task-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.task-toolbar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: center; background: var(--panel); }
+.task-list { overflow: auto; padding: 10px 14px 40px; }
+
+.task-group-title { font-size: 12px; color: var(--muted); margin: 14px 4px 6px; font-weight: 600; }
+.task-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 10px; border-radius: var(--radius); border: 1px solid transparent;
+}
+.task-item:hover { background: var(--panel); border-color: var(--border); }
+.task-item .check { width: 17px; height: 17px; margin-top: 1px; flex: 0 0 17px; border: 1.5px solid #b9bfc7; border-radius: 5px; background: #fff; }
+.task-item .check:hover { border-color: var(--accent); }
+.task-item.done .check { background: var(--ok); border-color: var(--ok); position: relative; }
+.task-item.done .check::after { content: '✓'; color: #fff; font-size: 12px; line-height: 1; position: absolute; left: 3px; top: 2px; }
+.task-item .name { font-size: 14px; }
+.task-item.done .name { text-decoration: line-through; color: var(--muted); }
+.task-item .name.clickable:hover { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.task-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; align-items: center; }
+.task-actions { opacity: 0; display: flex; gap: 4px; }
+.task-item:hover .task-actions { opacity: 1; }
+
+.tag-node { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; }
+.tag-node:hover { background: #f2f3f5; }
+.tag-node.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.tag-node .count { margin-left: auto; font-size: 11px; color: var(--muted); }
+.tag-children { margin-left: 14px; border-left: 1px dashed var(--border); padding-left: 4px; }
+
+/* ---------- 笔记 ---------- */
+.notes-layout { display: flex; height: 100%; min-height: 0; }
+.tree-panel { width: 272px; flex: 0 0 272px; border-right: 1px solid var(--border); overflow: auto; padding: 8px; background: var(--panel); }
+.tree-node { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 6px; user-select: none; }
+.tree-node:hover { background: #f2f3f5; }
+.tree-node.active { background: var(--accent-soft); color: var(--accent); }
+.tree-node.drop { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.tree-children { margin-left: 12px; }
+.note-editor { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.note-toolbar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--panel); flex-wrap: wrap; }
+.note-body { flex: 1; overflow: auto; padding: 16px 20px; min-height: 0; }
+.note-status { padding: 6px 14px; border-top: 1px solid var(--border); background: var(--panel); display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+
+.md-editor { width: 100%; min-height: 100%; border: none; outline: none; resize: none; font-family: "Cascadia Mono", Consolas, "Microsoft YaHei UI", monospace; font-size: 14px; line-height: 1.75; background: transparent; }
+.md-view { line-height: 1.8; max-width: 100%; }
+.md-view h1 { font-size: 24px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.md-view h2 { font-size: 20px; }
+.md-view h3 { font-size: 17px; }
+.md-view h4, .md-view h5, .md-view h6 { font-size: 15px; }
+.md-view p { margin: 10px 0; }
+.md-view ul, .md-view ol { padding-left: 24px; }
+.md-view li { margin: 4px 0; }
+.md-view li.task { list-style: none; margin-left: -20px; display: flex; gap: 8px; align-items: flex-start; }
+.md-view li.task input { margin-top: 4px; }
+.md-view blockquote { margin: 10px 0; padding: 4px 12px; border-left: 3px solid var(--border); color: #5a616b; background: #fafbfc; }
+.md-view code { background: #f2f3f5; padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 13px; }
+.md-view pre { background: #f7f8fa; padding: 12px; border-radius: var(--radius); overflow: auto; }
+.md-view img { max-width: 100%; border-radius: var(--radius); border: 1px solid var(--border); }
+.md-view hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
+.md-view a { color: var(--accent); }
+.md-view table { border-collapse: collapse; }
+.md-view th, .md-view td { border: 1px solid var(--border); padding: 6px 10px; }
+.hl-yellow { background: #fff3a3; }
+.hl-green { background: #c8f0c8; }
+.hl-pink { background: #ffd6e7; }
+.md-view .missing { color: var(--danger); background: #fdf1f1; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+
+/* ---------- 白板 ---------- */
+.board-wrap { flex: 1; position: relative; overflow: hidden; background: #fafbfc; min-height: 0; }
+.board-canvas { position: absolute; inset: 0; overflow: auto; }
+.board-inner { position: relative; width: 4000px; height: 2600px; background-image: radial-gradient(#e6e9ee 1px, transparent 1px); background-size: 20px 20px; }
+.board-node { position: absolute; border-radius: 8px; border: 1px solid var(--border); background: #fff; box-shadow: var(--shadow); overflow: hidden; }
+/* 卡片配色：颜色由 data-card-color 决定，**深浅两套由主题变量切换** ——
+   原来这里是"深色下一个 !important 把底色压成深灰"，那会把卡片自己的颜色（以及黄/绿/蓝的语义）全抹掉，
+   文字还是深色系的，于是深色模式下卡片颜色"显示不出来"、字也看不清。
+   现在改成：底色/文字都走变量，主题一换整套跟着换，颜色语义完整保留。 */
+.board-node[data-card-color='default'] { background: var(--card-default-bg); }
+.board-node[data-card-color='pink'] { background: var(--card-pink-bg); }
+.board-node[data-card-color='blue'] { background: var(--card-blue-bg); }
+.board-node[data-card-color='green'] { background: var(--card-green-bg); }
+.board-node[data-card-color='yellow'] { background: var(--card-yellow-bg); }
+.board-node[data-card-color='purple'] { background: var(--card-purple-bg); }
+/* 未知的自定义颜色（老数据里可能有）：按原样渲染，组件会用内联 background 兜底 */
+.board-node[data-card-color='custom'] { color: var(--text); }
+.board-node.selected { outline: 2px solid var(--accent); }
+.board-node .node-head { padding: 3px 6px; font-size: 11px; color: var(--muted); background: #f7f8fa; display: flex; justify-content: space-between; cursor: move; }
+.board-node .node-body { padding: 6px 8px; height: calc(100% - 22px); overflow: auto; font-size: 13px; }
+.board-node textarea { width: 100%; height: 100%; border: none; outline: none; resize: none; background: transparent; }
+.board-node .link-title { color: var(--accent); word-break: break-all; }
+.board-svg { position: absolute; inset: 0; width: 4000px; height: 2600px; pointer-events: none; }
+.board-toolbar { position: absolute; left: 12px; top: 12px; z-index: 5; display: flex; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px; box-shadow: var(--shadow); }
+
+/* ---------- 对话 ---------- */
+.ai-layout { display: flex; height: 100%; min-height: 0; }
+.conv-panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.conv-list { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 760px; padding: 10px 14px; border-radius: 10px; white-space: pre-wrap; word-break: break-word; line-height: 1.7; }
+.msg.user { align-self: flex-end; background: var(--accent); color: #fff; }
+.msg.assistant { align-self: flex-start; background: var(--panel); border: 1px solid var(--border); }
+.msg.error { border-color: #f0c2c5; background: #fdf1f1; color: var(--danger); }
+.msg .attachments { margin-top: 6px; font-size: 12px; opacity: .85; }
+.composer { border-top: 1px solid var(--border); background: var(--panel); padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+.composer .attach-list { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: #f2f3f5; border-radius: 12px; padding: 2px 10px; font-size: 12px; }
+.chip button { border: none; background: transparent; color: var(--muted); }
+.side-panel { width: 320px; flex: 0 0 320px; border-left: 1px solid var(--border); overflow: auto; padding: 12px; background: var(--panel); }
+
+.candidate { border: 1px solid var(--border); border-radius: var(--radius); padding: 10px; margin-bottom: 8px; background: #fbfcfd; }
+.candidate .row { margin-bottom: 6px; }
+.candidate label { width: 62px; color: var(--muted); font-size: 12px; }
+
+.modal-mask { position: fixed; inset: 0; background: rgba(16,24,40,.35); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal { background: var(--panel); border-radius: 10px; width: 560px; max-width: 92vw; max-height: 86vh; overflow: auto; box-shadow: 0 12px 40px rgba(16,24,40,.18); }
+.modal-head { padding: 14px 18px; border-bottom: 1px solid var(--border); font-weight: 600; display: flex; align-items: center; }
+.modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.modal-foot { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+.toast-wrap { position: fixed; right: 18px; bottom: 18px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
+.toast { padding: 10px 14px; border-radius: var(--radius); background: #2b3038; color: #fff; box-shadow: 0 6px 18px rgba(16,24,40,.2); max-width: 420px; }
+.toast.error { background: var(--danger); }
+.toast.success { background: var(--ok); }
+
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); padding: 0 12px; background: var(--panel); }
+.tab { padding: 9px 14px; border: none; background: transparent; border-bottom: 2px solid transparent; color: var(--muted); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+.list-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--border); }
+.list-row:last-child { border-bottom: none; }
+.list-row:hover { background: #fafbfc; }
+
+.checkbox { width: 15px; height: 15px; }
+
+/* ==================== 第二版：图标栏 + 笔记树 + 右键菜单 + 实时预览 ==================== */
+
+.app { display: flex; height: 100%; }
+
+/* 左侧图标栏 */
+.rail {
+  width: 54px; flex: 0 0 54px;
+  background: #f2f3f5;
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 0; gap: 4px;
+}
+.rail-logo {
+  width: 30px; height: 30px; border-radius: 7px;
+  display: block; margin-bottom: 8px; user-select: none;
+  -webkit-user-drag: none;
+}
+.rail-btn {
+  position: relative;
+  width: 40px; height: 38px; border-radius: 8px;
+  border: none; background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  color: #6b7280;
+}
+.rail-btn:hover { background: #e6e8ec; }
+.rail-btn.active { background: var(--accent-soft); color: var(--accent); }
+.rail-icon { font-size: 17px; line-height: 1; }
+.rail-badge {
+  position: absolute; right: 2px; top: 3px;
+  background: var(--accent); color: #fff;
+  font-size: 10px; line-height: 1; padding: 2px 4px; border-radius: 8px;
+}
+
+.appbar {
+  height: 42px; flex: 0 0 42px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 14px; border-bottom: 1px solid var(--border);
+  background: var(--panel);
+}
+.appbar h1 { font-size: 14px; margin: 0; font-weight: 600; }
+
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.main > .task-layout, .main > .notes-layout, .main > .ai-layout { flex: 1; min-height: 0; }
+
+/* 笔记树面板 */
+.tree-panel {
+  width: 246px; flex: 0 0 246px;
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.tree-toolbar {
+  display: flex; align-items: center; gap: 2px;
+  padding: 6px 8px; border-bottom: 1px solid var(--border);
+}
+.tree-scroll { flex: 1; overflow: auto; padding: 6px 6px 30px; }
+.tree-node {
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 6px; border-radius: 6px;
+  user-select: none; cursor: default; font-size: 13px;
+}
+.tree-node:hover { background: #f1f2f4; }
+.tree-node.active { background: var(--accent-soft); color: var(--accent); }
+.tree-node.drop { outline: 2px dashed var(--accent); outline-offset: -2px; }
+.tree-node.folder { color: #4b5563; font-weight: 500; }
+.tree-arrow { width: 12px; text-align: center; font-size: 10px; color: var(--muted); }
+.tree-icon { font-size: 13px; }
+.tree-children { margin-left: 14px; border-left: 1px dashed var(--border); padding-left: 2px; }
+.tree-rename {
+  flex: 1; min-width: 0; font-size: 13px;
+  border: 1px solid var(--accent); border-radius: 4px;
+  padding: 1px 4px; background: #fff; color: inherit;
+}
+.icon-btn {
+  border: none; background: transparent; color: #6b7280;
+  padding: 2px 5px; border-radius: 5px; font-size: 12px; line-height: 1.4;
+}
+.icon-btn:hover { background: #e6e8ec; color: var(--text); }
+
+/* 右键菜单 */
+.ctx-menu {
+  position: fixed; z-index: 300;
+  background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px; box-shadow: 0 8px 28px rgba(16, 24, 40, .18);
+}
+/* 子菜单（栏中栏）与父菜单同处一个容器：鼠标从父项移到子项不会被判成"点到外面" */
+.ctx-wrap { position: fixed; inset: 0; z-index: 300; pointer-events: none; }
+.ctx-wrap .ctx-menu { pointer-events: auto; }
+.ctx-item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  border: none; background: transparent; text-align: left;
+  padding: 6px 10px; border-radius: 6px; font-size: 13px;
+}
+.ctx-item:hover { background: var(--accent-soft); color: var(--accent); }
+.ctx-item.danger { color: var(--danger); }
+.ctx-item.danger:hover { background: #fdf1f1; }
+.ctx-item.has-sub { justify-content: space-between; }
+.ctx-item.has-sub.open { background: var(--accent-soft); color: var(--accent); }
+/* 子菜单项左侧的色块：颜色由 data-card-color 交给主题变量决定（深/浅各一套） */
+.ctx-swatch {
+  width: 14px; height: 14px; border-radius: 4px; flex: 0 0 14px;
+  border: 1px solid var(--swatch-ring); background: var(--surface-2);
+}
+.ctx-swatch[data-card-color='default'] { background: var(--card-default-bg); }
+.ctx-swatch[data-card-color='pink'] { background: var(--card-pink-bg); }
+.ctx-swatch[data-card-color='blue'] { background: var(--card-blue-bg); }
+.ctx-swatch[data-card-color='green'] { background: var(--card-green-bg); }
+.ctx-swatch[data-card-color='yellow'] { background: var(--card-yellow-bg); }
+.ctx-swatch[data-card-color='purple'] { background: var(--card-purple-bg); }
+.ctx-arrow { color: var(--muted); font-size: 11px; }
+.ctx-item.open .ctx-arrow { color: var(--accent); }
+.ctx-check { color: var(--accent); font-size: 12px; }
+.ctx-key { font-size: 11px; color: var(--muted); }
+.ctx-sep { height: 1px; background: var(--border); margin: 4px 6px; }
+
+/* 编辑器标题目录按钮 */
+.note-title {
+  border: none; background: transparent; font-weight: 600; font-size: 14px;
+  padding: 3px 6px; border-radius: 6px; max-width: 320px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.note-title:hover { background: #f0f1f3; }
+
+/* CodeMirror 宿主与实时预览样式 */
+.cm-host { height: 100%; }
+.cm-host .cm-editor { height: 100%; background: transparent; }
+.cm-host .cm-editor.cm-focused { outline: none; }
+
+/* 打字光标（caret）统一成蓝色，深浅主题一致。
+   背景：CodeMirror 默认光标是 `borderLeft: 1.2px solid black`，深色主题下它只把颜色换成 #ddd（浅灰）——
+   在深色底上是一条几乎看不见的细线（用户反馈"深色下光标看不出来"）。
+   这里显式指定蓝色 + 加粗到 2px，两种主题都用同一个颜色（软件里常见的蓝）。
+   注意：光标本身是个只画左边框的元素，所以不能写 background，要写 border-left。
+   变量 --caret 定义在下面两个主题块里（浅色 #2f6fed / 深色 #6f9bff）。 */
+.cm-host .cm-cursor,
+.cm-host .cm-dropCursor {
+  border-left: 2px solid var(--caret);
+  margin-left: -1px;
+}
+/* CodeMirror 自带一条 `&dark .cm-cursor { borderLeftColor: #ddd }`，优先级不低，
+   这里用同等的选择器 + !important 明确盖掉它（否则深色下依旧是浅灰细线）。 */
+:root[data-theme='dark'] .cm-host .cm-cursor,
+:root[data-theme='dark'] .cm-host .cm-dropCursor {
+  border-left-color: var(--caret) !important;
+}
+/* 编辑器的原生 caret（textarea 类控件，例如白板卡片里的文字）也跟着走 */
+.cm-host textarea,
+.board-node textarea {
+  caret-color: var(--caret);
+}
+
+.cm-host .cm-scroller {
+  font-family: "Cascadia Mono", Consolas, "Microsoft YaHei UI", monospace;
+  font-size: 14px; line-height: 1.85; padding: 12px 6px;
+}
+.cm-host .cm-content { padding: 0 8px; }
+.cm-hidden-mark { display: none; }
+.cm-strong { font-weight: 700; }
+.cm-em { font-style: italic; }
+.cm-h1 { font-size: 22px; font-weight: 700; line-height: 1.5; }
+.cm-h2 { font-size: 19px; font-weight: 700; line-height: 1.5; }
+.cm-h3 { font-size: 17px; font-weight: 700; line-height: 1.5; }
+.cm-h4, .cm-h5, .cm-h6 { font-size: 15px; font-weight: 700; line-height: 1.5; }
+.cm-hr { color: var(--muted); }
+.cm-quote { color: #5a616b; border-left: 3px solid var(--border); padding-left: 8px; }
+.cm-hl-yellow { background: #fff3a3; border-radius: 2px; }
+.cm-hl-green { background: #c8f0c8; border-radius: 2px; }
+.cm-hl-pink { background: #ffd6e7; border-radius: 2px; }
+
+/* 深色主题下的荧光笔。
+   原来只有浅色定义（#fff3a3 等），深色下正文是浅色字（--text:#e6e6e6），
+   浅底 + 浅字 = 看不清（用户反馈）。这里改成"低亮度同色系底 + 同色系亮字"，
+   三组对比度都 ≥ 6.5:1。编辑器（.cm-hl-*）与预览/其它渲染（.hl-*，<mark>）一起覆盖。 */
+:root[data-theme='dark'] .cm-hl-yellow,
+:root[data-theme='dark'] .hl-yellow {
+  background: rgba(255, 214, 64, .22);
+  box-shadow: inset 0 -.5em 0 rgba(255, 214, 64, .18);
+  color: #ffe9a3;
+}
+:root[data-theme='dark'] .cm-hl-green,
+:root[data-theme='dark'] .hl-green {
+  background: rgba(120, 220, 140, .20);
+  box-shadow: inset 0 -.5em 0 rgba(120, 220, 140, .16);
+  color: #b9f0c4;
+}
+:root[data-theme='dark'] .cm-hl-pink,
+:root[data-theme='dark'] .hl-pink {
+  background: rgba(255, 140, 190, .20);
+  box-shadow: inset 0 -.5em 0 rgba(255, 140, 190, .16);
+  color: #ffc9df;
+}
+
+/* ==================== 深色主题 ==================== */
+:root[data-theme='dark'] {
+  --bg: #1e1f22;
+  --panel: #26282c;
+  --border: #35383d;
+  --text: #e6e6e6;
+  --muted: #9aa0a6;
+  --accent: #6f9bff;
+  --accent-soft: #2c3446;
+  --danger: #ff6b6b;
+  --warn: #e0a33e;
+  --ok: #4cc38a;
+  --shadow: 0 1px 3px rgba(0, 0, 0, .35);
+  /* 打字光标颜色（深色主题：更亮的蓝，保证看得见） */
+  --caret: #6f9bff;
+
+  --surface-2: #2c2f33;
+  --surface-3: #24262a;
+  --hover-bg: #2f3237;
+  --swatch-ring: rgba(255, 255, 255, 0.22);
+  --danger-soft: #3a2528;
+
+  /* 白板卡片配色板（深色主题：深底 + 亮字 —— 同一套语义色，另一套明度）
+     关键是"底色比画布(#202124)亮一点、文字对比度 ≥ 4.5"，既分得清颜色又不刺眼 */
+  --card-default-bg: #2a2d31; --card-default-fg: #e6e6e6;
+  --card-pink-bg: #4a2434;    --card-pink-fg: #ffc9df;
+  --card-blue-bg: #1f3350;    --card-blue-fg: #bcd6ff;
+  --card-green-bg: #1f3d2a;   --card-green-fg: #b9f0c4;
+  --card-yellow-bg: #4a4020;  --card-yellow-fg: #ffe9a3;
+  --card-purple-bg: #372b52;  --card-purple-fg: #d9c9ff;
+
+  /* ── 绘制图形的线色（深色主题）──────────────────────────────────
+     深色下**直接复用设计系统里已有的语义色**，天然统一：
+       blue=--accent  green=--ok  yellow=--warn  default=--muted
+     对比度 vs 白板底 #1d1e21 全部 ≥ 6:1。
+     注意：这里只覆盖颜色，几何图形的填充仍走上面的 --card-*-bg。 */
+  --draw-default-line: #9aa0a6;
+  --draw-pink-line:    #f48fb1;
+  --draw-blue-line:    #6f9bff;
+  --draw-green-line:   #4cc38a;
+  --draw-yellow-line:  #e0a33e;
+  --draw-purple-line:  #b39ddb;
+}
+:root[data-theme='dark'] body { background: var(--bg); color: var(--text); }
+:root[data-theme='dark'] .rail { background: #202124; }
+:root[data-theme='dark'] .rail-btn:hover { background: #2f3237; }
+:root[data-theme='dark'] .tree-node:hover { background: #2d3035; }
+:root[data-theme='dark'] .icon-btn:hover { background: #2f3237; }
+:root[data-theme='dark'] .note-title:hover { background: #2f3237; }
+:root[data-theme='dark'] .btn { background: #2c2f33; }
+:root[data-theme='dark'] .btn:hover { background: #34383d; }
+:root[data-theme='dark'] .input, :root[data-theme='dark'] .select, :root[data-theme='dark'] .textarea {
+  background: #23252a; color: var(--text);
+}
+:root[data-theme='dark'] .tree-rename { background: #23252a; }
+:root[data-theme='dark'] .msg.assistant { background: #26282c; }
+:root[data-theme='dark'] .md-view code, :root[data-theme='dark'] .md-view pre { background: #2c2f33; }
+:root[data-theme='dark'] .md-view blockquote { background: #24262a; color: #b9bec4; }
+:root[data-theme='dark'] .board-wrap, :root[data-theme='dark'] .board-inner { background-color: #202124; }
+/* 深色下卡片底色由卡片的 data-card-color 决定（见上方变量），这里只微调边框 */
+:root[data-theme='dark'] .board-node { border-color: #3a3d42; }
+:root[data-theme='dark'] .board-node .node-head { background: #24262a; }
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb { background: #3d4147; }
+:root[data-theme='dark'] ::-webkit-scrollbar-thumb:hover { background: #4a4f56; }
+
+.cm-code {
+  background: #f2f3f5; border-radius: 3px; padding: 0 3px;
+  font-family: Consolas, monospace;
+}
+:root[data-theme='dark'] .cm-code { background: #2f3237; }
+.md-view li.task input { accent-color: var(--accent); }
+
+.tree-actions { display: none; gap: 0; }
+.tree-node:hover .tree-actions { display: inline-flex; }
+.tree-actions .icon-btn { padding: 0 3px; font-size: 11px; }
+
+/* 实时预览：列表圆点、任务框、分割线、链接、图片 */
+.cm-bullet { color: var(--accent); font-weight: 700; margin-right: 2px; }
+.cm-task { margin-right: 3px; }
+.cm-task.checked { color: var(--ok); }
+.cm-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.cm-rule { display: inline-block; width: 100%; height: 1px; background: var(--border); vertical-align: middle; }
+.cm-hr { padding: 6px 0; }
+.cm-image { display: inline-block; vertical-align: bottom; }
+.cm-image img { max-width: 100%; max-height: 320px; border-radius: 6px; border: 1px solid var(--border); }
+.cm-image-missing {
+  background: var(--danger-soft); color: var(--danger); border-radius: 4px;
+  padding: 0 6px; font-size: 12px;
+}
+:root[data-theme='dark'] .cm-image-missing { background: #3a2a2b; }
+
+/* 树：等宽展开指示 + SVG 图标 */
+.tree-toggle { flex: 0 0 14px; width: 14px; height: 14px; color: var(--muted); }
+.tree-node.folder:hover .tree-toggle { color: var(--text); }
+.tree-svg { display: block; width: 14px; height: 14px; }
+.tree-icon { display: inline-flex; align-items: center; color: #7b8390; }
+.tree-node.active .tree-icon, .tree-node.folder .tree-icon { color: #6b7280; }
+.tree-node.active .tree-icon { color: var(--accent); }
+.icon-btn { display: inline-flex; align-items: center; gap: 1px; color: #6b7280; }
+.icon-btn .plus { font-size: 12px; line-height: 1; margin-right: 1px; }
+:root[data-theme='dark'] .tree-icon { color: #9aa0a6; }
+
+.editor-slot { height: 100%; }
+.editor-slot .cm-host, .editor-slot .cm-editor { height: 100%; }
+
+/* tag 树：与笔记库文件管理一致的观感 */
+.tag-tree-scroll { flex: 1; overflow: auto; padding: 4px 6px 30px; min-height: 0; }
+.tree-node.tag { gap: 5px; }
+.tree-node.tag .count { font-size: 11px; color: var(--muted); margin-left: auto; }
+.tree-toggle-spacer { flex: 0 0 14px; width: 14px; }
+.tag-panel { display: flex; flex-direction: column; min-height: 0; }
+
+/* ---------- tag 面板布局调整 ---------- */
+.tag-panel { width: 212px; flex: 0 0 212px; overflow: hidden; padding: 8px 8px 4px; }
+.tag-panel-head {
+  display: flex; align-items: center;
+  padding: 6px 6px 4px; margin-top: 4px;
+  font-size: 12px; color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+.tag-panel-head .icon-btn { margin-left: auto; }
+.tag-root-row {
+  display: flex; align-items: center; gap: 6px; width: 100%;
+  padding: 5px 6px; min-height: 28px;
+  border: none; border-radius: 6px; background: transparent;
+  font-size: 13px; color: var(--text); text-align: left;
+}
+.tag-root-row:hover { background: #f1f2f4; }
+.tag-root-row.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.tag-count {
+  flex: 0 0 auto; min-width: 16px; text-align: right;
+  font-size: 11px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.tree-node.tag { min-height: 26px; padding: 3px 6px; }
+/* 选中态只用背景色，不再额外加左侧竖条 */
+/* 层级引导线：实线更清晰（笔记树与标签树共用） */
+.tree-children { margin-left: 8px; border-left: 1px solid var(--border); padding-left: 6px; }
+:root[data-theme='dark'] .tag-panel-head { border-top-color: var(--border); }
+:root[data-theme='dark'] .tag-root-row:hover { background: #2d3035; }
+
+/* 悬停操作按钮：浮在行右侧，不再挤压文字导致跳动 */
+.tree-node { position: relative; }
+.tree-node .tree-actions {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  display: none; align-items: center; gap: 1px;
+  padding-left: 6px; border-radius: 5px;
+}
+.tree-node:hover .tree-actions { display: inline-flex; }
+.tree-node:hover .tag-count, .tree-node:hover .count { visibility: hidden; }
+.tree-node .tree-actions { background: #f1f2f4; }
+.tree-node.active .tree-actions { background: var(--accent-soft); }
+:root[data-theme='dark'] .tree-node .tree-actions { background: #2d3035; }
+:root[data-theme='dark'] .tree-node.active .tree-actions { background: var(--accent-soft); }
+
+/* 图标栏：统一尺寸、对齐与视觉权重 */
+.rail-icon { display: flex; align-items: center; justify-content: center; width: 22px; height: 22px; }
+.rail-icon svg { display: block; }
+.rail-btn { width: 38px; height: 38px; border-radius: 9px; }
+.rail-btn.active { background: var(--accent-soft); color: var(--accent); }
+.rail-logo { width: 28px; height: 28px; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+
+/* 行内操作按钮：图标统一对齐，避免不同字形大小不一 */
+.icon-btn { display: inline-flex; align-items: center; justify-content: center; gap: 1px; }
+.icon-btn svg { display: block; }
+.tree-actions .icon-btn { padding: 0 3px; min-width: 20px; height: 20px; }
+.tree-toolbar .icon-btn { padding: 1px 4px; }
+
+/* 选中的笔记夹（新建内容会放进它里面） */
+.tree-node.folder.selected-folder { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.tree-node.folder[draggable='true'] { cursor: default; }
+
+/* ---------- 白板：连线圆点 / 缩放手柄 / 线上文字 / 配色弹层 ---------- */
+.board-node { overflow: visible; }
+.board-node .node-head { border-radius: 7px 7px 0 0; }
+.board-node.hover { border-color: var(--accent); }
+
+.link-dot {
+  position: absolute; width: 11px; height: 11px; border-radius: 50%;
+  background: #fff; border: 2px solid var(--accent); box-sizing: border-box;
+  cursor: crosshair; z-index: 5;
+}
+.link-dot:hover { background: var(--accent); }
+.link-dot-top { left: 50%; top: 0; transform: translate(-50%, -50%); }
+.link-dot-bottom { left: 50%; bottom: 0; transform: translate(-50%, 50%); }
+.link-dot-left { left: 0; top: 50%; transform: translate(-50%, -50%); }
+.link-dot-right { right: 0; top: 50%; transform: translate(50%, -50%); }
+
+.resize-handle {
+  position: absolute; width: 9px; height: 9px; box-sizing: border-box;
+  background: #fff; border: 1.5px solid var(--accent); border-radius: 2px; z-index: 6;
+}
+.rh-nw { left: 0; top: 0; transform: translate(-50%, -50%); cursor: nwse-resize; }
+.rh-n { left: 50%; top: 0; transform: translate(-50%, -50%); cursor: ns-resize; }
+.rh-ne { right: 0; top: 0; transform: translate(50%, -50%); cursor: nesw-resize; }
+.rh-e { right: 0; top: 50%; transform: translate(50%, -50%); cursor: ew-resize; }
+.rh-se { right: 0; bottom: 0; transform: translate(50%, 50%); cursor: nwse-resize; }
+.rh-s { left: 50%; bottom: 0; transform: translate(-50%, 50%); cursor: ns-resize; }
+.rh-sw { left: 0; bottom: 0; transform: translate(-50%, 50%); cursor: nesw-resize; }
+.rh-w { left: 0; top: 50%; transform: translate(-50%, -50%); cursor: ew-resize; }
+
+.edge-label {
+  position: absolute; transform: translate(-50%, -50%);
+  background: #fff; border: 1px solid var(--border); border-radius: 5px;
+  padding: 1px 7px; font-size: 12px; color: var(--text); line-height: 18px;
+  cursor: pointer; z-index: 2; white-space: pre; max-width: 240px; overflow: hidden;
+}
+.edge-label:hover { border-color: var(--accent); }
+.edge-label.selected { border-color: var(--accent); color: var(--accent); }
+.edge-label-input { border: none; outline: none; background: transparent; font-size: 12px; width: 120px; color: inherit; }
+
+.popover-mask { position: fixed; inset: 0; z-index: 40; }
+.color-popover {
+  position: fixed; z-index: 41; display: flex; gap: 6px; padding: 6px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow);
+}
+.color-swatch { width: 20px; height: 20px; border-radius: 5px; border: 1px solid var(--border); cursor: pointer; }
+.color-swatch.active { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+:root[data-theme='dark'] .edge-label { background: #2a2d31; }
+:root[data-theme='dark'] .link-dot { background: #2a2d31; }
+:root[data-theme='dark'] .resize-handle { background: #2a2d31; }
+
+/* ---------- 白板卡片：去掉标题栏，内容占满整张卡片 ---------- */
+.board-node { cursor: move; }
+.board-node textarea { margin-top: 10px; cursor: text; }
+.board-node .node-body { height: 100%; padding: 8px 10px; overflow: hidden; }
+.board-node .node-body::-webkit-scrollbar { width: 0; height: 0; }
+.board-node textarea::-webkit-scrollbar { width: 6px; }
+.board-node textarea::-webkit-scrollbar-thumb { background: #d5d8dd; border-radius: 3px; }
+.board-node textarea::-webkit-scrollbar-track { background: transparent; }
+:root[data-theme='dark'] .board-node textarea::-webkit-scrollbar-thumb { background: #3d4147; }
+
+/* ---------- 白板背景：浅灰底 + 清晰的点阵 ---------- */
+/* 原来接近纯白，点几乎看不见；现在底色压灰一档，点加粗加深 */
+.board-canvas { background-color: #f4f5f7; }
+.board-inner {
+  background-color: #f4f5f7;
+  background-image: radial-gradient(#d2d6dd 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+}
+:root[data-theme='dark'] .board-canvas { background-color: #1d1e21; }
+:root[data-theme='dark'] .board-inner {
+  background-color: #1d1e21;
+  background-image: radial-gradient(#3a3e45 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+}
+
+/* ---------- 白板视口：平移 / 缩放 / 框选 / 编辑态 ---------- */
+.board-canvas { overflow: hidden; position: absolute; inset: 0; touch-action: none; }
+.board-canvas.panning { cursor: grab; }
+.board-canvas.panning:active { cursor: grabbing; }
+.board-inner { position: absolute; left: 0; top: 0; will-change: transform; }
+.board-band {
+  position: absolute; z-index: 20; pointer-events: none;
+  border: 1px solid var(--accent); background: rgba(47, 111, 237, 0.10); border-radius: 2px;
+}
+/* 双击进入编辑的文字卡片：给出明确的编辑态反馈 */
+.board-node.editing { outline: 2px solid var(--accent); }
+.board-node.editing textarea { cursor: text; }
+.board-node textarea { margin-top: 0; }
+.board-node { cursor: move; }
+
+.board-svg { width: 100%; height: 100%; }
+
+/* ---------- 白板点阵改为画在视口层（巨型元素画背景会超出纹理上限） ---------- */
+.board-canvas {
+  --board-bg: #f4f5f7;
+  --board-dot: #d2d6dd;
+  background-color: var(--board-bg);
+}
+:root[data-theme='dark'] .board-canvas { --board-bg: #1d1e21; --board-dot: #3a3e45; }
+.board-inner { background: none; will-change: auto; }
+
+:root[data-theme='dark'] .board-inner { background: none; }
+
+/* 改名输入框：父级是 user-select:none，必须显式恢复，否则选不了字 */
+.tree-rename { user-select: text; -webkit-user-select: text; }
+
+/* ---- 白板：拖拽时不选字 ----------------------------------------
+   问题：框选卡片、画图形、平移画布时，指针拖过卡片就会把**卡片里的文字**选上
+   （文字卡片的正文、笔记/链接卡片的标题、以及卡片左上角那行小字）。
+   文字卡片平时是 readOnly + pointerEvents:none，但那**拦不住拖拽选字** —— 它走的是选区，不是事件。
+
+   做法与文件树（.tree-node + .tree-rename）完全一样：
+     ① 世界层整层 user-select:none，一次覆盖卡片 / 连线文字 / 图形；
+     ② 只有进入编辑态才显式恢复 text，否则编辑时选不了字。
+   不需要改 JS：user-select 不拦事件，双击编辑、拖动、框选都照常。 */
+.board-inner { user-select: none; -webkit-user-select: none; }
+
+/* 编辑文字卡片时才允许选其中的文字（双击进入编辑态后 .board-node 会带 .editing） */
+.board-node.editing textarea { user-select: text; -webkit-user-select: text; }
+/* 编辑线上文字时同理 */
+.edge-label-input { user-select: text; -webkit-user-select: text; }
+
+/* 拖动时高亮"移到最外层"的落点（面板标题行）。
+   只改背景与内描边：不产生任何布局变化，否则浏览器会取消拖拽。 */
+body.tree-dragging .tree-head {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  border-radius: 6px;
+}
+
+/* ---------- 分割线：原来太浅几乎看不见 ---------- */
+:root { --rule: #b6bcc5; }
+:root[data-theme='dark'] { --rule: #565c66; }
+.md-view hr { border-top: 1.5px solid var(--rule); margin: 18px 0; }
+.cm-rule { background: var(--rule); height: 1.5px; }
+.cm-hr { padding: 8px 0; }
+
+
+/* ---------- 标签选择器 ---------- */
+.tag-picker { position: relative; }
+.tag-picker-box {
+  display: flex; flex-wrap: wrap; gap: 5px; align-items: center; min-height: 32px;
+  padding: 4px 8px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel); cursor: text;
+}
+.tag-picker-box:focus-within { border-color: var(--accent); }
+.tag-picker-input { flex: 1; min-width: 90px; border: none; outline: none; background: transparent; color: var(--text); font-size: 13px; }
+.tag-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 6px;
+  background: var(--accent-soft); color: var(--accent); font-size: 12px;
+}
+.tag-chip.new { background: #fff3d6; color: #a06a00; }
+.tag-chip-new { font-size: 10px; opacity: .8; }
+.tag-chip-x { cursor: pointer; opacity: .6; padding: 0 2px; }
+.tag-chip-x:hover { opacity: 1; }
+.tag-picker-menu {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; max-height: 240px; overflow: auto;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.14); padding: 4px;
+}
+.tag-picker-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.tag-picker-item:hover { background: var(--hover, rgba(0,0,0,.05)); }
+.tag-picker-empty { padding: 8px; }
+
+
+
+/* 收起时也能看到容量的小条 */
+.cloudbar-mini {
+  width: 72px; height: 5px; border-radius: 3px; background: #e6e8ec;
+  overflow: hidden; flex: none;
+}
+.cloudbar-mini-fill { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+
+/* 展开/收起按钮：做成不起眼的文字按钮，和整条风格一致 */
+.cloudbar-toggle {
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 12px; padding: 2px 4px; border-radius: 4px;
+}
+.cloudbar-toggle:hover { color: var(--accent); background: #f2f3f5; }
+
+/* ============================================================
+   数据目录切换器 + 云数据目录状态栏
+   排版规范刻意对齐「笔记树」(.tree-node) 与「待办列表」：
+     · 行高 26px、圆角 6px、行内 gap 6px
+     · 图标统一 14px 线性 SVG（currentColor）
+     · 名称 13px，次要说明 12px 灰字
+     · 当前项用与 .tree-node.active 相同的高亮色
+     · 说明文字用与待办标签块相同的胶囊样式
+   ============================================================ */
+
+/* ---------- 右上角：数据目录切换器 ---------- */
+.lib-switch { position: relative; }
+.lib-switch-btn {
+  display: inline-flex; align-items: center; gap: 6px; height: 28px;
+  padding: 0 9px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--panel); color: var(--text); font-size: 13px; cursor: pointer;
+}
+.lib-switch-btn:hover { background: #f2f3f5; border-color: var(--border); }
+.lib-switch-icon { display: inline-flex; color: var(--muted); }
+.lib-switch-btn:hover .lib-switch-icon { color: var(--accent); }
+.lib-caret { color: var(--muted); font-size: 10px; margin-left: 2px; }
+
+.lib-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 40;
+  min-width: 320px; padding: 5px;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(16, 24, 40, .18);
+}
+.lib-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 6px; border-radius: 6px; font-size: 13px; cursor: pointer; user-select: none;
+}
+.lib-item:hover { background: #f2f3f5; }
+.lib-item.active { background: var(--accent-soft); color: var(--accent); }
+.lib-item.active .lib-item-icon { color: var(--accent); }
+.lib-item.missing { opacity: .5; }
+.lib-item-icon { display: inline-flex; width: 14px; color: var(--muted); flex: none; }
+.lib-item-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.lib-item-meta { font-size: 12px; color: var(--muted); }
+.lib-item.active .lib-item-meta,
+.lib-item.active .lib-item-time { color: var(--accent); opacity: .8; }
+.lib-item-time { font-size: 12px; color: var(--muted); min-width: 34px; text-align: right; }
+.lib-sep { height: 1px; background: var(--border); margin: 5px 6px; }
+
+/* ---------- 云数据目录状态栏（可收缩） ---------- */
+.cloudbar {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 7px 14px; border-bottom: 1px solid var(--border); background: var(--panel);
+}
+.cloudbar-row { display: flex; align-items: center; gap: 8px; min-height: 26px; flex-wrap: wrap; }
+.cloudbar-name {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--accent); font-size: 13px; font-weight: 600;
+}
+.cloudbar-icon { display: inline-flex; }
+/* 操作按钮：与笔记工具栏的 .btn small 一致，只是多了个图标 */
+.cloudbar-act { display: inline-flex; align-items: center; gap: 5px; }
+.cloudbar-act.danger { color: var(--danger); }
+.cloudbar-act.danger:hover { border-color: var(--danger); }
+
+/* 状态提示：文案风格与待办里的状态标签统一 */
+.cloudbar-flag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; color: #a06a00;
+}
+.cloudbar-warn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; color: var(--danger);
+}
+/* 说明用胶囊块 —— 与待办列表里的 tag 块同款 */
+.cloudbar-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #f2f3f5; border-radius: 12px; padding: 2px 10px;
+  font-size: 12px; color: var(--muted); white-space: nowrap;
+}
+.cloudbar-meta { font-size: 12px; color: var(--muted); }
+
+/* 容量小条 */
+.cloudbar-mini {
+  width: 72px; height: 5px; border-radius: 3px; background: var(--hover-bg);
+  overflow: hidden; flex: none;
+}
+.cloudbar-mini-fill { display: block; height: 100%; background: var(--accent); transition: width .3s; }
+
+.cloudbar-toggle {
+  display: inline-flex; align-items: center; gap: 3px;
+  border: none; background: transparent; color: var(--muted); cursor: pointer;
+  font-size: 12px; padding: 2px 6px; border-radius: 6px;
+}
+.cloudbar-toggle:hover { background: var(--hover-bg); color: var(--text); }
+
+/* ---------- AI 执行的步骤（像 harness 那样逐步显示） ---------- */
+.ai-steps { margin: 6px 0 4px; padding: 6px 10px; border-left: 2px solid var(--accent); background: #f7f9fc; border-radius: 0 6px 6px 0; }
+.ai-step { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding: 1px 0; }
+.ai-step .ok { color: #16a34a; }
+.ai-step .fail { color: var(--danger); }
+.ai-step-index { color: #9aa3af; min-width: 16px; text-align: right; }
+.ai-actions { display: flex; gap: 6px; margin-top: 6px; }
+
+/* ---------- 内嵌引擎开关 ---------- */
+.engine-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--muted); cursor: pointer; user-select: none;
+  padding: 2px 8px; border: 1px solid var(--border); border-radius: 12px;
+}
+.engine-toggle:hover { background: #f2f3f5; color: var(--text); }
+.engine-toggle input { margin: 0; cursor: pointer; }
+.engine-toggle .dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #cbd5e1; display: inline-block;
+}
+.engine-toggle .dot.on { background: #16a34a; }
+
+/* ============================================================
+   随笔记（聊天界面）：顶部选择器 + 拖放 + 消息卡片
+   视觉规范与全软件一致：14px 线性图标、细描边、柔和底色、圆角 6-8px
+   ============================================================ */
+
+.chat-pickers {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-bottom: 1px solid var(--border); background: var(--panel);
+}
+.picker { position: relative; }
+.picker-btn {
+  display: inline-flex; align-items: center; gap: 5px; height: 26px;
+  padding: 0 9px; border: 1px solid var(--border); border-radius: 13px;
+  background: var(--panel); color: var(--text); font-size: 12px; cursor: pointer;
+}
+.picker-btn:hover:not(:disabled) { background: #f2f3f5; }
+.picker-btn:disabled { color: var(--muted); cursor: default; }   /* 只有一个选项时不装作能点 */
+.picker-icon { display: inline-flex; color: var(--muted); }
+.picker-caret { display: inline-flex; color: var(--muted); }
+.picker-menu {
+  position: absolute; left: 0; top: calc(100% + 5px); z-index: 40; min-width: 260px;
+  padding: 5px; background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; box-shadow: 0 8px 28px rgba(16, 24, 40, .18);
+}
+.picker-item { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border-radius: 6px; cursor: pointer; }
+.picker-item:hover { background: #f2f3f5; }
+.picker-item.active { background: var(--accent-soft); }
+.picker-item-label { font-size: 13px; }
+.picker-item-hint { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+.chat-act { display: inline-flex; align-items: center; gap: 4px; }
+
+/* 拖放高亮 */
+.ai-layout { position: relative; }
+.ai-layout.dragging { outline: 2px dashed var(--accent); outline-offset: -6px; }
+.drop-hint {
+  position: absolute; inset: 8px; z-index: 50; pointer-events: none;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(232, 240, 254, .92); color: var(--accent);
+  border-radius: 10px; font-size: 14px;
+}
+.drop-hint svg { color: var(--accent); }
+
+/* 消息里的操作行 */
+.msg-actions { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.msg-action {
+  display: inline-flex; align-items: center; gap: 4px;
+  border: none; background: transparent; color: var(--muted);
+  font-size: 12px; padding: 2px 6px; border-radius: 5px; cursor: pointer;
+}
+.msg-action:hover { background: #eef0f3; color: var(--text); }
+.msg-meta { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--muted); }
+
+/* ==================== DSH 插件壳（移植新增，不属于 Quill 原样式） ==================== */
+/* 根容器：占满面板。样式作用域化由 build.mjs 的 postcss 前缀化完成，
+   凡是已带 #dsh-quill-user-root 的选择器会被原样保留，所以这几条写全即可。 */
+#dsh-quill-user-root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Microsoft YaHei UI', 'Microsoft YaHei', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+#dsh-quill-user-root > .app {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+#dsh-quill-user-root > .empty {
+  flex: 1 1 auto;
+}
+/* 顶栏里那个"隐藏侧边栏"按钮的图标与文字对齐 */
+#dsh-quill-user-root .appbar .btn svg {
+  display: block;
+}
+
+/* ==== 白板绘制模式 ================================
+   工具栏在绘制模式与普通模式之间整体切换（见 Whiteboard.tsx）。
+   颜色由 --draw-*-line / --card-*-bg 提供，这里只管形状与交互外观。 */
+
+/* 工具栏中间的竖分隔线 */
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border);
+  margin: 0 2px;
+  flex: none;
+}
+
+/* 绘制工具按钮：正方形、居中放图标（比文字按钮更省地方） */
+.draw-tool {
+  min-width: 34px;
+  padding: 0 6px;
+  font-size: 15px;
+  line-height: 1;
+}
+
+/* 颜色小圆点：用该色板的**填充色**做底，让用户一眼看出"这是卡片那套颜色" */
+.draw-swatch {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex: none;
+}
+.draw-swatch[data-card-color='default'] { background: var(--card-default-bg); }
+.draw-swatch[data-card-color='pink']    { background: var(--card-pink-bg); }
+.draw-swatch[data-card-color='blue']    { background: var(--card-blue-bg); }
+.draw-swatch[data-card-color='green']   { background: var(--card-green-bg); }
+.draw-swatch[data-card-color='yellow']  { background: var(--card-yellow-bg); }
+.draw-swatch[data-card-color='purple']  { background: var(--card-purple-bg); }
+/* 选中的色点点一圈 accent 描边 + 外发光，在浅深两色下都看得清 */
+.draw-swatch.primary {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+/* 画布上的图形：默认不吃鼠标事件（选择/命中由画布自己算，见 Whiteboard.tsx） */
+.board-shapes .board-shape {
+  pointer-events: none;
+}
+
+/* 曲线编辑态的控制点：中心用面板色（浅色下白、深色下深），描边 accent */
+.board-ctrl-points .board-ctrl-point {
+  pointer-events: none;
+}
+
+/* 绘制模式下画布显示十字光标（明确"现在能画"） */
+.board-canvas.drawing { cursor: crosshair; }
+/* 曲线编辑态：悬停到控制点上显示可拖动 */
+.board-canvas.drawing.curve-editing { cursor: crosshair; }
+
+/* ==== 深色主题覆盖块（浅色不动，深色单独覆盖） ==== */
+/* 浅色规则保持原样；下面这些是它们在深色下的对应值，避免"浅底浅字看不清"。
+   新增规则请成对添加：浅色写原值，深色写这里。 */
+:root[data-theme='dark'] .sidebar { background: #202124; }
+:root[data-theme='dark'] .rail { background: #202124; }
+:root[data-theme='dark'] .rail-btn:hover { background: #2f3237; }
+:root[data-theme='dark'] .icon-btn:hover { background: #2f3237; }
+:root[data-theme='dark'] .chip { background: #2c2f33; }
+:root[data-theme='dark'] .cloudbar-chip { background: #2c2f33; }
+:root[data-theme='dark'] .cloudbar-mini { background: #2f3237; }
+:root[data-theme='dark'] .board-wrap { background-color: #202124; }
+:root[data-theme='dark'] .board-node { border-color: #3a3d42; }
+:root[data-theme='dark'] .link-dot,
+:root[data-theme='dark'] .resize-handle,
+:root[data-theme='dark'] .edge-label { background: #26282c; }
+:root[data-theme='dark'] .tag-node:hover,
+:root[data-theme='dark'] .tree-node:hover,
+:root[data-theme='dark'] .lib-switch-btn:hover,
+:root[data-theme='dark'] .lib-item:hover,
+:root[data-theme='dark'] .cloudbar-toggle:hover,
+:root[data-theme='dark'] .engine-toggle:hover,
+:root[data-theme='dark'] .picker-btn:hover:not(:disabled),
+:root[data-theme='dark'] .picker-item:hover { background: #2f3237; }
+:root[data-theme='dark'] .list-row:hover { background: #24262a; }
+:root[data-theme='dark'] .msg-action:hover { background: #2f3237; }
+:root[data-theme='dark'] .md-view code { background: #2c2f33; }
+:root[data-theme='dark'] .md-view pre { background: #24262a; }
+:root[data-theme='dark'] .btn.danger:hover,
+:root[data-theme='dark'] .ctx-item.danger:hover,
+:root[data-theme='dark'] .md-view .missing,
+:root[data-theme='dark'] .msg.error { background: #3a2528; }
+:root[data-theme='dark'] .task-item .check { background: #26282c; }
+:root[data-theme='dark'] .tag-chip.new { background: #4a4020; color: #ffe9a3; }
+:root[data-theme='dark'] .board-node[data-card-color='default'] { color: var(--card-default-fg); }
+:root[data-theme='dark'] .board-node[data-card-color='pink'] { color: var(--card-pink-fg); }
+:root[data-theme='dark'] .board-node[data-card-color='blue'] { color: var(--card-blue-fg); }
+:root[data-theme='dark'] .board-node[data-card-color='green'] { color: var(--card-green-fg); }
+:root[data-theme='dark'] .board-node[data-card-color='yellow'] { color: var(--card-yellow-fg); }
+:root[data-theme='dark'] .board-node[data-card-color='purple'] { color: var(--card-purple-fg); }

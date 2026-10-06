@@ -1,0 +1,25 @@
+{
+  "name": "dsh-quill-user-repo",
+  "private": true,
+  "description": "「羽毛笔」用户版 —— 笔记 / 白板 / 待办面板插件（开发与构建用的仓库根）",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs all",
+    "test": "node tools/run-all.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "postcss": "^8.5.0",
+    "jsdom": "^25.0.0",
+    "ajv": "^8.17.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "ssh2",
+      "cpu-features",
+      "@napi-rs/canvas"
+    ]
+  }
+}
